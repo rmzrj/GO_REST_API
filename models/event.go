@@ -6,9 +6,9 @@ import (
 
 type Event struct {
 	ID          int64
-	Name        string    `binding:required`
-	Description string    `binding:required`
-	Location    string    `binding:required`
+	Name        string `binding:required`
+	Description string `binding:required`
+	Location    string `binding:required`
 	UserID      int
 }
 
@@ -61,4 +61,19 @@ func GetAllEvents() ([]Event, error) {
 		events = append(events, e)
 	}
 	return events, nil
+}
+
+func GetEventByID(id int64) (*Event, error) {
+	query := "SELECT * FROM events WHERE id = ?"
+	row := db.DB.QueryRow(query, id)
+
+	var e Event
+	err := row.Scan(&e.ID, &e.Name, &e.Description, &e.Location, &e.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
+
 }
