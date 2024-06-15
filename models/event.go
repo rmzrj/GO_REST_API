@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"rest_api_example.com/db"
 )
 
@@ -11,15 +9,14 @@ type Event struct {
 	Name        string    `binding:required`
 	Description string    `binding:required`
 	Location    string    `binding:required`
-	DateTime    time.Time `binding:required`
 	UserID      int
 }
 
 var events = []Event{}
 
 func (e Event) Save() error {
-	query := `INSERT INTO events(name, description,location,dateTime,user_id)
-	VALUES (?,?,?,?,?)`
+	query := `INSERT INTO events(name, description,location,user_id)
+	VALUES (?,?,?,?)`
 	stmt, err := db.DB.Prepare(query)
 
 	if err != nil {
@@ -28,7 +25,7 @@ func (e Event) Save() error {
 
 	defer stmt.Close()
 
-	result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID)
+	result, err := stmt.Exec(e.Name, e.Description, e.Location, e.UserID)
 
 	if err != nil {
 		return err
@@ -41,10 +38,27 @@ func (e Event) Save() error {
 
 }
 
-func GetAllEvents() []Event {
+func GetAllEvents() ([]Event, error) {
 
 	query := "SELECT * FROM events"
 
-	db.DB.Query(query)
-	return events
+	rows, err := db.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var events []Event
+
+	for rows.Next() {
+		var e Event
+		err := rows.Scan(&e.ID, &e.Name, &e.Description, &e.Location, &e.UserID)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+	return events, nil
 }
