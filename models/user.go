@@ -38,14 +38,14 @@ func (u User) Save() error {
 	return err
 }
 
-func (u User) ValidateCred() error {
+func (u *User) ValidateCred() error {
 	query := "SELECT id, password FROM users WHERE email = ?"
 
 	row := db.DB.QueryRow(query, u.Email)
 
 	var e User
 
-	err := row.Scan(&e.ID, &e.Password)
+	err := row.Scan(&u.ID, &e.Password)
 
 	if err != nil {
 		return err
