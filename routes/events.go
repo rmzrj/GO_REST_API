@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"rest_api_example.com/models"
+	"rest_api_example.com/utils"
 )
 
 func getEvents(context *gin.Context) {
@@ -35,15 +36,27 @@ func getEvent(context *gin.Context) {
 }
 
 func createEvent(context *gin.Context) {
+	token := context.Request.Header.Get("Authorization")
+	if token == "" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	err := utils.VerifyToken(token)
+
+	if err != nil {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Not Unauthorized"})
+
+	}
+
 	var event models.Event
-	err := context.ShouldBindJSON(&event)
+	err = context.ShouldBindJSON(&event)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse data !!!!"})
 		return
 	}
 
-	event.ID = 1
 	event.UserID = 1
 
 	err = event.Save()
@@ -89,11 +102,11 @@ func updateEvent(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK,gin.H{"message": "Event updated!"})
+	context.JSON(http.StatusOK, gin.H{"message": "Event updated!"})
 
 }
 
-func deleteEvent (context *gin.Context){
+func deleteEvent(context *gin.Context) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
@@ -114,7 +127,7 @@ func deleteEvent (context *gin.Context){
 		context.JSON(http.StatusInternalServerError, gin.H{"error6": err.Error()})
 		return
 	}
-	
-	context.JSON(http.StatusOK,gin.H{"message": "Event deleted!"})
+
+	context.JSON(http.StatusOK, gin.H{"message": "Event deleted!"})
 
 }

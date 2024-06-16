@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"rest_api_example.com/models"
+	"rest_api_example.com/utils"
 )
 
 func signup(context *gin.Context) {
@@ -22,10 +23,10 @@ func signup(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message":"user created!!"})
+	context.JSON(http.StatusCreated, gin.H{"message": "user created!!"})
 }
 
-func login(context *gin.Context){
+func login(context *gin.Context) {
 	var user models.User
 	err := context.ShouldBindJSON(&user)
 
@@ -41,8 +42,10 @@ func login(context *gin.Context){
 		return
 	}
 
-	context.JSON(http.StatusOK,gin.H{"message":"logined!!"})
-
-
+	token, err := utils.GenerateToken(user.Email, user.ID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not generate token !!!!"})
+	}
+	context.JSON(http.StatusOK, gin.H{"message": "logined!!", "token": token})
 
 }

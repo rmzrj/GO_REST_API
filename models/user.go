@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+
 	"rest_api_example.com/db"
 	"rest_api_example.com/utils"
 )
@@ -38,19 +39,19 @@ func (u User) Save() error {
 }
 
 func (u User) ValidateCred() error {
-	query := "SELECT email, password FROM users WHERE email = ?"
+	query := "SELECT id, password FROM users WHERE email = ?"
 
-	row := db.DB.QueryRow(query,u.Email)
+	row := db.DB.QueryRow(query, u.Email)
 
 	var e User
 
-	err := row.Scan(&e.Email,&e.Password)
+	err := row.Scan(&e.ID, &e.Password)
 
 	if err != nil {
 		return err
 	}
 
-	passwordValid := utils.CheckPassordHash(u.Password,e.Password)
+	passwordValid := utils.CheckPassordHash(u.Password, e.Password)
 
 	if !passwordValid {
 		return errors.New("INVALID")
